@@ -13,6 +13,14 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    let falseButton = SCNNode();
+    let trueButton = SCNNode();
+    
+    
+    //    create correct/wrong answer labels ivars and add to viewdidload
+    var truelabel = UILabel()
+    var falselabel = UILabel()
+    var question = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,13 +30,139 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
+        createTrueOrFalseMenuWithText()
+        detectButtonInFrostrumOfCamera()
         
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        //  true label
         
-        // Set the scene to the view
-        sceneView.scene = scene
+        truelabel.frame = CGRect(x: 0, y: 0, width: 400, height: 100)
+        truelabel.text = "Correct Answer"
+        truelabel.center = CGPoint(x: 200, y: 500)
+        truelabel.textAlignment = .center
+        truelabel.textColor = UIColor.green
+        truelabel.font = UIFont(name: "Avenir next", size: 25)
+        
+        // false label
+        
+        falselabel.frame = CGRect(x: 0, y: 0, width: 400, height: 100)
+        falselabel.text = "Wrong Answer"
+        falselabel.center = CGPoint(x: 200, y: 500)
+        falselabel.textAlignment = .center
+        falselabel.textColor = UIColor.red
+        falselabel.font = UIFont(name: "Avenir next", size: 25)
+        
+        //question label
+        
+        question.frame = CGRect(x: 0, y: 0, width: 400, height: 100)
+        question.text = "Q:- Is Sun a star?"
+        question.center = CGPoint(x: 200, y: 50)
+        question.textAlignment = .center
+        question.textColor = UIColor.yellow
+        question.font = UIFont(name: "Avenir next", size: 25)
+        view.addSubview(question)
     }
+    
+    
+    
+    
+    
+    
+    
+    func createTrueOrFalseMenuWithText(){
+        
+        //1. Create A Menu Holder
+        let menu = SCNNode()
+        
+        //2. Create A True Button With An SCNText Geometry & Green Colour
+        let trueTextGeometry = SCNText(string: "True" , extrusionDepth: 1)
+        trueTextGeometry.font = UIFont(name: "Helvatica", size: 3)
+        trueTextGeometry.flatness = 0
+        trueTextGeometry.firstMaterial?.diffuse.contents = UIColor.green
+        trueButton.geometry = trueTextGeometry
+        trueButton.scale = SCNVector3(0.01, 0.01 , 0.01)
+        trueButton.name = "True"
+        
+        //3. Create A False Button With An SCNText Geometry & Red Colour
+        
+        let falseTextGeometry = SCNText(string: "False" , extrusionDepth: 1)
+        falseTextGeometry.font = UIFont(name: "Helvatica", size: 3)
+        falseTextGeometry.flatness = 0
+        falseTextGeometry.firstMaterial?.diffuse.contents = UIColor.red
+        falseButton.geometry = falseTextGeometry
+        falseButton.scale = SCNVector3(0.01, 0.01 , 0.01)
+        falseButton.name = "False"
+        
+        //4. Set The Buttons Postions
+        trueButton.position = SCNVector3(-0.9,0,0)
+        falseButton.position = SCNVector3(0.9,0,0)
+        
+        //5. Add The Buttons To The Menu Node & Set Its Position
+        menu.addChildNode(trueButton)
+        menu.addChildNode(falseButton)
+        menu.position = SCNVector3(0,0, -1.5)
+        
+        //6. Add The Menu To The View
+        sceneView.scene.rootNode.addChildNode(menu)
+    }
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    /// Detects If An Object Is In View Of The Camera Frostrum
+    func detectButtonInFrostrumOfCamera(){
+        
+        //1. Get The Current Point Of View
+        if let currentPointOfView = sceneView.pointOfView{
+            
+            if sceneView.isNode(trueButton, insideFrustumOf: currentPointOfView){
+                
+                
+                print("True Button Has Been Selected As The Answer")
+                
+                DispatchQueue.main.async {
+                    self.truelabel.isHidden = false
+                    self.view.addSubview(self.truelabel)
+                    self.falselabel.isHidden = true
+                }
+                
+                
+                
+                //view.addSubview(falselabel)
+                
+            }
+            
+            if sceneView.isNode(falseButton, insideFrustumOf: currentPointOfView){
+                
+                print("False Button Has Been Selected As The Answer")
+                
+                DispatchQueue.main.async {
+                    self.truelabel.isHidden = true
+                    self.view.addSubview(self.falselabel)
+                    self.falselabel.isHidden = false
+                }
+            }
+        }
+    }
+    
+    
+    func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        
+        detectButtonInFrostrumOfCamera()
+        
+    }
+    
+    
+    
+    
+    
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -78,3 +212,4 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
 }
+
